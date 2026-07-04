@@ -126,15 +126,25 @@ export const DoctorAvatarCanvas: React.FC<DoctorAvatarCanvasProps> = ({
         // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Draw current frame centered with proper aspect ratio containment
+        // Draw current frame centered with proper aspect ratio containment and center cropping
         const currentImg = images[currentFrameRef.current];
         if (currentImg && currentImg.complete) {
           const imgWidth = currentImg.width;
           const imgHeight = currentImg.height;
-          const scale = Math.min(width / imgWidth, height / imgHeight);
-          const x = (width - imgWidth * scale) / 2;
-          const y = (height - imgHeight * scale) / 2;
-          ctx.drawImage(currentImg, x, y, imgWidth * scale, imgHeight * scale);
+          
+          if (imgWidth > imgHeight) {
+            // Landscape format with black side borders (e.g. 16:9). Crop square center.
+            const size = imgHeight;
+            const sx = (imgWidth - size) / 2;
+            const sy = 0;
+            ctx.drawImage(currentImg, sx, sy, size, size, 0, 0, width, height);
+          } else {
+            // Standard square or portrait. Fit to canvas.
+            const scale = Math.min(width / imgWidth, height / imgHeight);
+            const x = (width - imgWidth * scale) / 2;
+            const y = (height - imgHeight * scale) / 2;
+            ctx.drawImage(currentImg, x, y, imgWidth * scale, imgHeight * scale);
+          }
         }
 
         // Advance to next frame within limits
