@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { DoctorAvatarCanvas } from '../components/visualizers/DoctorAvatarCanvas';
-import { TextRotate } from '../components/ui/text-rotate';
 import { Card, CardContent } from '../components/ui/card';
 import { FloatingPaths } from '../components/ui/background-paths';
 import {
@@ -49,19 +48,11 @@ const AnimatedECG = () => {
   );
 };
 
-export default function LandingPage() {
+export default function MarketingLandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState('problem');
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX - window.innerWidth / 2) / 35,
-        y: (e.clientY - window.innerHeight / 2) / 35,
-      });
-    };
-    
     const handleScroll = () => {
       if (window.scrollY > 20) {
         setIsScrolled(true);
@@ -192,243 +183,130 @@ export default function LandingPage() {
         </header>
       </div>
 
-      {/* HERO SECTION WITH FANCY FLOATING CARDS */}
-      <section className="relative w-full overflow-hidden min-h-[920px] lg:min-h-[960px] flex items-center justify-center pt-28 pb-12 z-10">
-        
-        {/* BACKGROUND PATHS CONTAINER */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
-          <FloatingPaths position={1} />
-        </div>
-
-        {/* FLOATING HEALTHCARE UI CARDS (Hidden on mobile/tablet to avoid overlapping text, beautifully placed on desktop) */}
-        <div className="hidden xl:block absolute inset-0 pointer-events-none z-10">
-          
-          {/* FLOATING CARD 1: AI Health Score (Top Left) */}
-          <motion.div
-            style={{ x: mousePos.x * 0.7, y: mousePos.y * 0.7, rotate: -4 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute top-[18%] left-[6%] w-48 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="flex items-center justify-between pb-2 border-b border-[#644736]/10 text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60">
-              <span>AI Health Score</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-            </div>
-            <div className="pt-2.5 flex items-center space-x-3">
-              <div className="relative h-11 w-11 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="22" cy="22" r="18" stroke="rgba(100,71,54,0.06)" strokeWidth="3.5" fill="transparent" />
-                  <circle cx="22" cy="22" r="18" stroke="#C7A37E" strokeWidth="3.5" fill="transparent" strokeDasharray="113" strokeDashoffset="9" strokeLinecap="round" />
-                </svg>
-                <span className="absolute text-xs font-black">92</span>
-              </div>
-              <div className="text-left">
-                <p className="text-[11px] font-extrabold leading-none">Excellent</p>
-                <p className="text-[9px] text-[#644736]/60 font-semibold mt-0.5">Continuous Sync</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 2: Live Heart Rate (Top Right) */}
-          <motion.div
-            style={{ x: mousePos.x * 1.3, y: mousePos.y * 1.3, rotate: 3 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute top-[22%] right-[8%] w-48 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="flex items-center justify-between pb-2 border-b border-[#644736]/10 text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60">
-              <span>Live Heart Rate</span>
-              <Heart className="h-3 w-3 text-rose-500 animate-pulse" />
-            </div>
-            <div className="pt-2 text-left">
-              <div className="flex items-baseline space-x-0.5">
-                <span className="text-xl font-black">72</span>
-                <span className="text-[9px] font-bold text-[#644736]/60">bpm</span>
-              </div>
-              <svg viewBox="0 0 100 20" className="w-full h-5 text-rose-500/80 mt-1.5">
-                <path d="M0 10 H30 L35 2 L40 18 L45 8 L50 12 L55 10 H100" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 3: Blood Pressure (Bottom Left) */}
-          <motion.div
-            style={{ x: mousePos.x * 0.9, y: mousePos.y * 0.9, rotate: -2 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute bottom-[24%] left-[8%] w-44 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1.5 border-b border-[#644736]/10">Blood Pressure</div>
-            <div className="pt-2 text-left">
-              <div className="text-lg font-black leading-none">120 / 80</div>
-              <div className="flex items-center mt-1.5 text-[8.5px] font-bold text-emerald-600 bg-emerald-500/10 rounded px-1.5 py-0.5 w-max">
-                <span>Stable</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 4: Oxygen Saturation (Bottom Right) */}
-          <motion.div
-            style={{ x: mousePos.x * 1.15, y: mousePos.y * 1.15, rotate: 4 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute bottom-[28%] right-[6%] w-44 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1.5 border-b border-[#644736]/10">O2 Saturation</div>
-            <div className="pt-2.5 flex items-center justify-between">
-              <span className="text-xl font-black">98%</span>
-              <div className="h-6 w-6 rounded-full border-2 border-sky-400 border-t-transparent animate-spin" />
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 5: Medication Check (Mid Left) */}
-          <motion.div
-            style={{ x: mousePos.x * 0.8, y: mousePos.y * 0.8, rotate: 2 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute top-[48%] left-[4%] w-48 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1 border-b border-[#644736]/10">Medication</div>
-            <div className="flex items-center space-x-2 mt-2">
-              <div className="h-5 w-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 text-xs font-bold">✓</div>
-              <span className="text-[10px] font-extrabold text-[#644736]/80">Morning Dose Taken</span>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 6: Doctor Alert (Top Mid Right) */}
-          <motion.div
-            style={{ x: mousePos.x * 1.4, y: mousePos.y * 1.4, rotate: -3 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute top-[12%] right-[26%] w-48 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1.5 border-b border-[#644736]/10">Doctor Alert</div>
-            <div className="mt-2 flex flex-col text-left">
-              <span className="text-[11px] font-extrabold text-[#644736]">Patient Stable</span>
-              <span className="text-[8px] text-[#644736]/50 font-bold mt-0.5">Last updated 2 min ago</span>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 7: Upcoming Appointment (Bottom Mid Left) */}
-          <motion.div
-            style={{ x: mousePos.x * 0.65, y: mousePos.y * 0.65, rotate: 3 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute bottom-[10%] left-[24%] w-48 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1.5 border-b border-[#644736]/10">Check-in</div>
-            <div className="mt-2 text-left">
-              <div className="text-[11px] font-extrabold">Tomorrow</div>
-              <div className="text-[9.5px] text-[#C7A37E] font-extrabold mt-0.5">09:30 AM</div>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 8: Digital Twin Preview (Bottom Mid Right) */}
-          <motion.div
-            style={{ x: mousePos.x * 1.35, y: mousePos.y * 1.35, rotate: -1 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute bottom-[12%] right-[24%] w-44 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1.5 border-b border-[#644736]/10">Digital Twin</div>
-            <div className="flex items-center space-x-3 pt-2">
-              <svg viewBox="0 0 100 200" className="w-6 h-10 text-[#C7A37E]/80 animate-pulse">
-                <path d="M50 15c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8zm0 10c-15 0-22 8-22 25v30c0 4 3 7 7 7h3v60c0 8 6 15 12 15s12-7 12-15V87h3c4 0 7-3 7-7V50c0-17-7-25-22-25z" fill="currentColor" />
-              </svg>
-              <span className="text-[9.5px] font-extrabold text-[#644736]/80 leading-tight">Body model active</span>
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 9: AI Recommendation (Mid Right) */}
-          <motion.div
-            style={{ x: mousePos.x * 0.95, y: mousePos.y * 0.95, rotate: -2 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute top-[46%] right-[3%] w-52 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1.5 border-b border-[#644736]/10">AI Directive</div>
-            <div className="flex flex-wrap gap-1.5 mt-2.5">
-              {['Hydrate', 'Rest', 'Continue Meds'].map((rec) => (
-                <span key={rec} className="text-[8px] font-bold px-2 py-0.5 bg-[#644736]/5 border border-[#644736]/10 rounded-full">{rec}</span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* FLOATING CARD 10: Caregiver Notification (Mid Left Near Hero) */}
-          <motion.div
-            style={{ x: mousePos.x * 0.75, y: mousePos.y * 0.75, rotate: 1 }}
-            whileHover={{ y: -6, scale: 1.03 }}
-            className="absolute top-[34%] left-[24%] w-48 rounded-[24px] bg-white/45 backdrop-blur-[12px] border border-white/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] text-[#644736] pointer-events-auto"
-          >
-            <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#644736]/60 pb-1 border-b border-[#644736]/10">Care Network</div>
-            <div className="mt-2 flex items-center space-x-2 text-[10px] font-extrabold text-[#644736]/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span>Everything normal</span>
-            </div>
-          </motion.div>
-
-        </div>
-
-        {/* CENTRAL HERO TEXT LAYOUT (Centered on desktop, stacks responsively) */}
-        <div className="relative z-20 max-w-4xl mx-auto text-center px-6 flex flex-col items-center space-y-6">
-          
+      {/* HERO SECTION */}
+      <section className="max-w-7xl mx-auto w-full px-6 pt-28 pb-12 md:py-16 md:pt-36 flex flex-col lg:flex-row items-center gap-10 flex-1 z-10 relative">
+        {/* Left Panel (60%) */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full lg:w-3/5 space-y-5 text-left"
+        >
           {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center space-x-2 rounded-full border border-[#644736]/10 bg-white/50 px-4 py-1.5 text-[10.5px] font-bold uppercase tracking-wider text-[#C7A37E]"
+            variants={itemVariants}
+            className="inline-flex items-center space-x-2 rounded-full border border-[#4E3629]/10 bg-white/50 px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#C7A37E]"
           >
             <Sparkles className="h-3 w-3 text-[#C7A37E]" />
-            <span>AI Powered Home Healthcare</span>
+            <span>AI Powered Preventive Healthcare</span>
           </motion.div>
 
-          {/* Headline with TextRotate */}
+          {/* Heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-[#644736] leading-[1.05] flex flex-col items-center justify-center"
+            variants={itemVariants}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#4E3629] leading-[1.08]"
             style={headerStyle}
           >
-            <span>Healthcare Should Be</span>
-            <TextRotate 
-              texts={[
-                "Predictive",
-                "Preventive",
-                "Continuous",
-                "Explainable",
-                "Intelligent",
-                "Accessible",
-                "Connected",
-                "Human-Centered"
-              ]}
-              className="text-[#C7A37E]"
-              delay={2200}
-            />
+            Healthcare Should Begin <br className="hidden sm:inline" />
+            Before the Hospital.
           </motion.h1>
 
-          {/* Subheading */}
+          {/* Description */}
           <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-sm sm:text-base md:text-lg text-[#644736]/80 leading-relaxed max-w-2xl font-medium"
+            variants={itemVariants}
+            className="text-sm sm:text-base text-[#4E3629]/80 leading-relaxed max-w-xl font-medium"
           >
-            Nash OS continuously monitors patient health, predicts deterioration before emergencies occur, explains risks with AI, and empowers doctors and caregivers to intervene early.
+            Nash OS continuously monitors patient health, predicts deterioration, explains risks using AI, and enables timely intervention before hospitalization becomes necessary.
           </motion.p>
 
-          {/* Actions CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex items-center justify-center space-x-4 pt-2"
-          >
+          {/* Buttons */}
+          <motion.div variants={itemVariants} className="flex items-center space-x-4">
             <Link href="/login">
-              <button className="px-6 py-3 bg-[#644736] hover:bg-[#4E3629] text-[#FAF8F5] text-xs font-bold uppercase tracking-widest rounded-full shadow-[0_4px_15px_rgba(100,71,54,0.15)] hover:translate-y-[-1px] transition-all duration-200 cursor-pointer">
+              <button className="px-5 py-2.5 bg-[#C7A37E] hover:bg-[#C7A37E]/95 hover:translate-y-[-1px] text-[#4E3629] text-xs font-bold uppercase tracking-wider rounded-full shadow-[0_4px_12px_rgba(199,163,126,0.15)] transition-all duration-200 cursor-pointer">
                 Explore Platform
               </button>
             </Link>
             <Link href="/login">
-              <button className="px-6 py-3 border border-[#644736]/15 bg-white/45 hover:bg-white/70 hover:translate-y-[-1px] text-[#644736] text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-200 cursor-pointer">
-                Watch Live Demo
+              <button className="px-5 py-2.5 border border-[#4E3629]/15 bg-white/45 hover:bg-white/70 hover:translate-y-[-1px] text-[#4E3629] text-xs font-bold uppercase tracking-wider rounded-full transition-all duration-200 cursor-pointer">
+                Watch Demo
               </button>
             </Link>
           </motion.div>
 
-        </div>
+          {/* Trust Checklists */}
+          <motion.div
+            variants={itemVariants}
+            className="pt-4 border-t border-[#4E3629]/10 flex items-center space-x-6 text-[10px] uppercase font-bold tracking-wider text-[#4E3629]/60"
+          >
+            <span className="flex items-center"><ShieldCheck className="h-4 w-4 mr-1 text-[#C7A37E]" /> AI Assisted</span>
+            <span className="flex items-center"><ShieldCheck className="h-4 w-4 mr-1 text-[#C7A37E]" /> Explainable</span>
+            <span className="flex items-center"><ShieldCheck className="h-4 w-4 mr-1 text-[#C7A37E]" /> Home Healthcare</span>
+          </motion.div>
+        </motion.div>
+
+        {/* Right Panel (40%) - Floating Dashboard Preview */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="w-full lg:w-2/5 relative"
+        >
+          <div className="bg-white/45 border border-white/35 rounded-[24px] p-5 shadow-[0_12px_40px_rgba(100,71,54,0.02)] backdrop-blur-[24px] space-y-4">
+            {/* Health Score Circular Chart */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#4E3629]/6">
+              <div>
+                <span className="text-[9px] uppercase font-bold tracking-wider text-[#4E3629]/60">Clinical Status</span>
+                <h3 className="text-xs font-extrabold mt-0.5">Today's Summary</h3>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="h-7 w-7 rounded-full bg-[#C7A37E]/15 flex items-center justify-center text-xs font-bold text-[#C7A37E]">92</span>
+                <span className="text-xs font-bold text-[#C7A37E]">Excellent</span>
+              </div>
+            </div>
+
+            {/* ECG Line visual display */}
+            <AnimatedECG />
+
+            {/* Vitals Grid */}
+            <div className="grid grid-cols-2 gap-3.5">
+              <div className="p-3 border border-white/40 bg-white/20 rounded-2xl">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-[#4E3629]/50">Heart Rate</span>
+                <p className="text-xs font-extrabold text-[#4E3629] mt-0.5">72 <span className="text-[9px] text-[#4E3629]/60">bpm</span></p>
+              </div>
+              <div className="p-3 border border-white/40 bg-white/20 rounded-2xl">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-[#4E3629]/50">Oxygen Sat</span>
+                <p className="text-xs font-extrabold text-[#4E3629] mt-0.5">98%</p>
+              </div>
+            </div>
+
+            {/* Twin Outline mockup */}
+            <div className="h-28 border border-white/40 bg-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden">
+              <svg className="w-12 h-20 text-[#4E3629]/15" viewBox="0 0 100 200" fill="none">
+                <path
+                  d="M50 15c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8zm0 10c-15 0-22 8-22 25v30c0 4 3 7 7 7h3v60c0 8 6 15 12 15s12-7 12-15V87h3c4 0 7-3 7-7V50c0-17-7-25-22-25z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeOpacity="0.4"
+                  strokeDasharray="4 4"
+                />
+                <circle cx="50" cy="52" r="8" fill="#C7A37E" fillOpacity="0.1" />
+                <circle cx="50" cy="52" r="3.5" fill="#C7A37E" className="animate-pulse" />
+              </svg>
+              <div className="absolute bottom-2 right-2.5 flex items-center space-x-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#C7A37E] animate-ping" />
+                <span className="text-[8px] uppercase tracking-wider text-[#4E3629]/55 font-bold">Biometrics Active</span>
+              </div>
+            </div>
+
+            {/* Meds checklist indicator */}
+            <div className="p-3 border border-white/40 bg-white/20 rounded-2xl flex items-center justify-between text-xs">
+              <span className="font-semibold text-neutral-600">Prescribed Diuretics</span>
+              <span className="px-2 py-0.5 text-[8px] uppercase font-bold tracking-wider text-[#C7A37E] bg-[#C7A37E]/15 border border-[#C7A37E]/20 rounded">
+                Completed
+              </span>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* PROBLEM SECTION */}
