@@ -62,14 +62,15 @@ export default function MarketingLandingPage() {
       }
       
       const sections = ['problem', 'workflow', 'features', 'twin-showcase'];
-      const scrollPosition = window.scrollY + 180;
+      const scrollPosition = window.scrollY + 220; // Offset for header trigger height
 
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
+          const rect = el.getBoundingClientRect();
+          const top = rect.top + window.scrollY;
+          const bottom = top + rect.height;
+          if (scrollPosition >= top && scrollPosition < bottom) {
             setActiveSection(section);
             break;
           }
@@ -132,15 +133,11 @@ export default function MarketingLandingPage() {
             isScrolled ? 'px-6 py-2 bg-white/60 border-white/50 shadow-[0_8px_32px_rgba(100,71,54,0.05)]' : 'px-8 py-3.5'
           }`}
         >
-          {/* Logo - Text removed, keeping clean monogram logo */}
-          <div className="flex items-center space-x-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4E3629] text-[#FAF8F5] font-extrabold text-sm shadow-[0_2px_8px_rgba(100,71,54,0.12)]">
-              N
-            </div>
-          </div>
+          {/* Logo - completely removed */}
+          <div className="hidden md:block w-8 h-8" />
 
-          {/* Links - iPhone-like Segmented Pill morphology */}
-          <nav className="hidden md:flex items-center bg-[#4E3629]/5 border border-[#4E3629]/5 rounded-full p-1 space-x-1 text-[11px] font-bold uppercase tracking-wider">
+          {/* Links - iPhone-like segmented indicator directly on navbar glass */}
+          <nav className="hidden md:flex items-center space-x-1 text-[11px] font-bold uppercase tracking-wider">
             {['problem', 'workflow', 'features', 'twin-showcase'].map((sec) => {
               const label = sec === 'twin-showcase' ? 'Digital Twin' : sec === 'workflow' ? 'How It Works' : sec;
               const isActive = activeSection === sec;
@@ -157,8 +154,8 @@ export default function MarketingLandingPage() {
                   {isActive && (
                     <motion.div
                       layoutId="activePill"
-                      className="absolute inset-0 bg-white rounded-full shadow-[0_2px_8px_rgba(100,71,54,0.06)] border border-[#4E3629]/5"
-                      transition={{ type: 'spring', stiffness: 350, damping: 26 }}
+                      className="absolute inset-0 bg-white/80 rounded-full shadow-[0_2px_10px_rgba(100,71,54,0.08)] border border-white/60"
+                      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
                     />
                   )}
                 </a>
@@ -189,12 +186,12 @@ export default function MarketingLandingPage() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="w-full lg:w-3/5 space-y-5 text-left flex flex-col items-start"
+          className="w-full lg:w-3/5 space-y-6 text-left flex flex-col items-start"
         >
           {/* Elegant Glow Brand Logo */}
           <motion.div
             variants={itemVariants}
-            className="relative inline-block mb-1"
+            className="relative inline-block"
           >
             <span 
               className="text-4xl md:text-5xl font-black tracking-widest text-[#4E3629] uppercase drop-shadow-[0_0_15px_rgba(199,163,126,0.5)]" 
@@ -202,15 +199,6 @@ export default function MarketingLandingPage() {
             >
               Nash OS
             </span>
-          </motion.div>
-
-          {/* Badge */}
-          <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center space-x-2 rounded-full border border-[#4E3629]/10 bg-white/50 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#C7A37E]"
-          >
-            <Sparkles className="h-3 w-3 text-[#C7A37E]" />
-            <span>AI Powered Preventive Healthcare</span>
           </motion.div>
 
           {/* Heading with TextRotate */}
