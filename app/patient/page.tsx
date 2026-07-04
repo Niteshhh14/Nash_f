@@ -60,20 +60,19 @@ export default function PatientDashboard() {
     setSendingSms(true);
     setSmsStatus('idle');
     try {
-      const response = await fetch('https://textbelt.com/text', {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/notifications/test`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          phone: phoneNumber,
-          message: `Nash OS Emergency: Ramesh Kumar has triggered a Panic Alert. Ward caregivers and emergency responders notified.`,
-          key: 'free'
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phoneNumber
         })
       });
       const data = await response.json();
       if (data.success) {
         setSmsStatus('success');
       } else {
-        console.error("Textbelt quota limit or error: ", data.error);
+        console.error("Failed to dispatch alert from backend: ", data);
         setSmsStatus('error');
       }
     } catch (err) {
