@@ -26,24 +26,24 @@ export const Checklist: React.FC = () => {
   const activeCount = tasks.filter(t => !t.completed).length;
 
   return (
-    <Card>
+    <Card className="border-white/55 bg-white/45 backdrop-blur-[12px] shadow-sm">
       <CardHeader className="flex flex-row items-start justify-between space-y-0">
         <div>
-          <CardTitle className="text-base font-semibold flex items-center space-x-2">
-            <CheckSquare className="h-4.5 w-4.5 text-cyan-400" />
+          <CardTitle className="text-base font-semibold flex items-center space-x-2 text-[#4E3629]">
+            <CheckSquare className="h-4.5 w-4.5 text-[#C7A37E]" />
             <span>Active Care Tasks Checklist</span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-[#4E3629]/70">
             Daily checks compiled from patient EHR care directives.
           </CardDescription>
         </div>
-        <div className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-wider rounded px-2.5 py-1">
+        <div className="bg-[#C7A37E]/10 border border-[#C7A37E]/20 text-[#C7A37E] text-[10px] font-bold uppercase tracking-wider rounded px-2.5 py-1">
           {activeCount} Tasks Pending
         </div>
       </CardHeader>
       <CardContent>
         {tasks.length === 0 ? (
-          <div className="py-6 text-center text-sm text-neutral-500">
+          <div className="py-6 text-center text-sm text-[#4E3629]/70">
             No assigned tasks for today.
           </div>
         ) : (
@@ -54,24 +54,24 @@ export const Checklist: React.FC = () => {
                 onClick={() => toggleTask(task.id)}
                 className={`w-full flex items-center justify-between p-3.5 rounded-xl border transition-all duration-150 cursor-pointer text-left ${
                   task.completed
-                    ? 'border-white/5 bg-white/5/20 text-neutral-500 line-through'
-                    : 'border-white/5 bg-black/20 text-white/90 hover:border-white/10 hover:bg-black/30'
+                    ? 'border-[#4E3629]/10 bg-[#4E3629]/5 text-[#4E3629]/50 line-through'
+                    : 'border-white/50 bg-white/60 text-[#4E3629] hover:border-[#4E3629]/20 hover:bg-white'
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   {task.completed ? (
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 shrink-0">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 shrink-0">
                       <Check className="h-3 w-3" />
                     </div>
                   ) : (
-                    <Circle className="h-5 w-5 text-neutral-500 shrink-0" />
+                    <Circle className="h-5 w-5 text-[#4E3629]/40 shrink-0" />
                   )}
                   <div>
                     <p className="text-xs font-semibold">{task.title}</p>
-                    <p className="text-[10px] text-neutral-500 mt-0.5">Dependent: {task.patientName}</p>
+                    <p className="text-[10px] text-[#4E3629]/60 mt-0.5">Dependent: {task.patientName}</p>
                   </div>
                 </div>
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-neutral-500 bg-white/5 border border-white/5 px-2 py-0.5 rounded">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#4E3629]/65 bg-[#4E3629]/5 border border-[#4E3629]/10 px-2 py-0.5 rounded">
                   {task.timeSlot}
                 </span>
               </button>

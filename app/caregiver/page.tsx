@@ -19,12 +19,12 @@ export default function CaregiverDashboard() {
       {/* Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white/95">Dependent Telemetry Board</h1>
-          <p className="text-xs text-neutral-400">Continuous clinical monitoring interface for mapped dependents.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#4E3629]">Dependent Telemetry Board</h1>
+          <p className="text-xs text-[#4E3629]/70">Continuous clinical monitoring interface for mapped dependents.</p>
         </div>
 
         {/* Sync status */}
-        <div className="flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-semibold">
+        <div className="flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-3 py-1.5 rounded-xl text-xs font-semibold">
           <CheckCircle2 className="h-4 w-4" />
           <span>Dependent Nodes Mapped</span>
         </div>
@@ -34,7 +34,7 @@ export default function CaregiverDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Dependents list */}
         <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-base font-bold text-neutral-400 uppercase tracking-wider">
+          <h2 className="text-base font-bold text-[#4E3629]/60 uppercase tracking-wider">
             Active Dependents Telemetry
           </h2>
           <DependentTelemetry patients={caregiverPatients} isLoading={isLoading} />
@@ -42,7 +42,7 @@ export default function CaregiverDashboard() {
 
         {/* Care Checklist */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-neutral-400 uppercase tracking-wider">
+          <h2 className="text-base font-bold text-[#4E3629]/60 uppercase tracking-wider">
             Required Directives
           </h2>
           <Checklist />
