@@ -62,15 +62,13 @@ export default function MarketingLandingPage() {
       }
       
       const sections = ['problem', 'workflow', 'features', 'twin-showcase'];
-      const scrollPosition = window.scrollY + 220; // Offset for header trigger height
 
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
           const rect = el.getBoundingClientRect();
-          const top = rect.top + window.scrollY;
-          const bottom = top + rect.height;
-          if (scrollPosition >= top && scrollPosition < bottom) {
+          // If the section occupies the viewport line at 250px from top
+          if (rect.top <= 250 && rect.bottom > 250) {
             setActiveSection(section);
             break;
           }
@@ -166,9 +164,9 @@ export default function MarketingLandingPage() {
           {/* CTAs */}
           <div className="flex items-center space-x-3">
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-xs font-bold text-[#4E3629] hover:bg-[#4E3629]/5 cursor-pointer">
+              <button className="px-4 py-2 text-xs font-bold text-[#4E3629] hover:bg-[#4E3629]/5 rounded-full transition-colors duration-200 cursor-pointer">
                 Login
-              </Button>
+              </button>
             </Link>
             <Link href="/login">
               <button className="px-4 py-2 bg-[#C7A37E] hover:bg-[#C7A37E]/95 hover:translate-y-[-1px] text-[#4E3629] text-xs font-bold rounded-full shadow-[0_2px_10px_rgba(199,163,126,0.15)] transition-all duration-200 cursor-pointer">
