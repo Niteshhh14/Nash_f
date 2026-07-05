@@ -81,6 +81,7 @@ const CameraController: React.FC<{
 
   return (
     <OrbitControls
+      makeDefault
       enableZoom={true}
       enablePan={false}
       autoRotate={autoRotate}
@@ -165,7 +166,7 @@ const AnatomyScene: React.FC<{
   };
 
   return (
-    <group ref={modelRef} position={[0, -0.5, 0]}>
+    <group ref={modelRef} position={[0, -0.9, 0]}>
       {/* 1. Body Skin Shell Loader */}
       {!loadFailed && gltf ? (
         <primitive object={gltf} visible={wireVisible} />

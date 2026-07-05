@@ -81,8 +81,8 @@ export const Sidebar: React.FC = () => {
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-[#4E3629]/10">
         <Link href="/" className="flex items-center space-x-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4E3629] text-[#FAF8F5] font-bold text-xs">
-            N
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#4E3629]/15 bg-white/80 text-[#C7A37E]">
+            <Activity className="h-4 w-4" />
           </div>
           {sidebarOpen && (
             <span className="text-sm tracking-tight text-[#4E3629] animate-fade-in" style={headerStyle}>
