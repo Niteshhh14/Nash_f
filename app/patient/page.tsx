@@ -33,7 +33,7 @@ export default function PatientDashboard() {
 
   const [animatedScore, setAnimatedScore] = React.useState(0);
   const [panicOpen, setPanicOpen] = React.useState(false);
-  const [phoneNumber, setPhoneNumber] = React.useState('');
+  const [phoneNumber, setPhoneNumber] = React.useState('+919390089951');
   const [sendingSms, setSendingSms] = React.useState(false);
   const [smsStatus, setSmsStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
 
