@@ -46,37 +46,61 @@ const CameraController: React.FC<{
   autoRotate: boolean;
 }> = ({ selectedOrgan, autoRotate }) => {
   const { camera, controls } = useThree();
+  const lastOrganRef = useRef<string | undefined>(undefined);
+  const isTransitioningRef = useRef<boolean>(false);
+
+  // Monitor selected organ changes to trigger camera zoom transition once
+  useEffect(() => {
+    if (selectedOrgan !== lastOrganRef.current) {
+      lastOrganRef.current = selectedOrgan;
+      isTransitioningRef.current = true;
+      
+      // Auto-unlock controls after a short transition duration (800ms)
+      const timer = setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedOrgan]);
 
   useFrame(() => {
     if (!controls) return;
     const orbit = controls as any;
 
-    if (selectedOrgan) {
-      const organ = ORGANS.find(o => o.id === selectedOrgan);
-      if (organ) {
-        // Smoothly interpolate orbit controls target to selected organ position
-        const targetPos = new THREE.Vector3(organ.pos[0], organ.pos[1] - 0.6, organ.pos[2]);
-        orbit.target.lerp(targetPos, 0.08);
+    if (isTransitioningRef.current) {
+      if (selectedOrgan) {
+        const organ = ORGANS.find(o => o.id === selectedOrgan);
+        if (organ) {
+          // Smoothly interpolate orbit controls target to selected organ position
+          const targetPos = new THREE.Vector3(organ.pos[0], organ.pos[1] - 0.6, organ.pos[2]);
+          orbit.target.lerp(targetPos, 0.08);
 
-        // Zoom camera in towards the organ
-        const desiredCamPos = new THREE.Vector3(
-          organ.pos[0], 
-          organ.pos[1] - 0.3, 
-          organ.pos[2] + 1.8
-        );
-        camera.position.lerp(desiredCamPos, 0.08);
-        orbit.autoRotate = false;
+          // Zoom camera in towards the organ
+          const desiredCamPos = new THREE.Vector3(
+            organ.pos[0], 
+            organ.pos[1] - 0.3, 
+            organ.pos[2] + 1.8
+          );
+          camera.position.lerp(desiredCamPos, 0.08);
+          orbit.autoRotate = false;
+        }
+      } else {
+        // Return to default overview view
+        orbit.target.lerp(new THREE.Vector3(0, 0.8, 0), 0.06);
+        
+        const desiredCamPos = new THREE.Vector3(0, 1.2, 6.2);
+        camera.position.lerp(desiredCamPos, 0.05);
+        orbit.autoRotate = autoRotate;
       }
+      orbit.update();
     } else {
-      // Return to default overview view
-      orbit.target.lerp(new THREE.Vector3(0, 0.8, 0), 0.06);
-      
-      const desiredCamPos = new THREE.Vector3(0, 1.2, 6.2);
-      camera.position.lerp(desiredCamPos, 0.05);
-      orbit.autoRotate = autoRotate;
+      // Toggle auto-rotation based on status when controls are unlocked
+      if (selectedOrgan) {
+        orbit.autoRotate = false;
+      } else {
+        orbit.autoRotate = autoRotate;
+      }
     }
-
-    orbit.update();
   });
 
   return (
@@ -86,7 +110,7 @@ const CameraController: React.FC<{
       enablePan={false}
       autoRotate={autoRotate}
       autoRotateSpeed={0.45}
-      minDistance={3}
+      minDistance={2}
       maxDistance={12}
       maxPolarAngle={Math.PI * 0.75}
       minPolarAngle={Math.PI * 0.25}
@@ -166,7 +190,7 @@ const AnatomyScene: React.FC<{
   };
 
   return (
-    <group ref={modelRef} position={[0, -0.9, 0]}>
+    <group ref={modelRef} position={[0, -0.9, 0]} rotation={[0, -Math.PI / 2, 0]}>
       {/* 1. Body Skin Shell Loader */}
       {!loadFailed && gltf ? (
         <primitive object={gltf} visible={wireVisible} />
