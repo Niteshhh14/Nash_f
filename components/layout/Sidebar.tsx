@@ -25,12 +25,18 @@ export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { user, role, setRole, logout } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useAppStore();
+  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useAppStore();
 
   const handleRoleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRole = e.target.value as 'doctor' | 'patient' | 'caregiver';
     await setRole(newRole);
     router.push(`/${newRole}`);
+  };
+
+  const handleNavClick = () => {
+    if (window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
   };
 
   const getNavItems = () => {
@@ -74,13 +80,15 @@ export const Sidebar: React.FC = () => {
   return (
     <aside
       className={cn(
-        "relative z-30 flex flex-col border-r border-[#4E3629]/10 bg-white/45 backdrop-blur-[24px] transition-all duration-300 ease-in-out text-[#4E3629]",
-        sidebarOpen ? "w-64" : "w-20"
+        // Mobile Drawer Layout (fixed positioning overlay)
+        "fixed inset-y-0 left-0 z-40 w-64 border-r border-[#4E3629]/10 bg-white/55 backdrop-blur-[28px] shadow-2xl transition-transform duration-300 ease-in-out text-[#4E3629] flex flex-col md:shadow-none md:transition-all md:duration-300 md:relative md:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        sidebarOpen ? "md:w-64" : "md:w-20"
       )}
     >
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-[#4E3629]/10">
-        <Link href="/" className="flex items-center space-x-2.5">
+        <Link href="/" className="flex items-center space-x-2.5" onClick={handleNavClick}>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#4E3629]/15 bg-white/80 text-[#C7A37E]">
             <Activity className="h-4 w-4" />
           </div>
@@ -108,6 +116,7 @@ export const Sidebar: React.FC = () => {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleNavClick}
               className={cn(
                 "group flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 border",
                 isActive
@@ -132,6 +141,7 @@ export const Sidebar: React.FC = () => {
         {role && (
           <Link
             href="/notifications"
+            onClick={handleNavClick}
             className={cn(
               "group flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 border",
               pathname === '/notifications'
@@ -155,6 +165,7 @@ export const Sidebar: React.FC = () => {
         {role && (
           <Link
             href="/settings"
+            onClick={handleNavClick}
             className={cn(
               "group flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 border",
               pathname === '/settings'

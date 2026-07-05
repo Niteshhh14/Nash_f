@@ -1,5 +1,5 @@
-import { BackgroundPaths } from "./background-paths"
+import { WovenLightHero } from "@/components/ui/woven-light-hero";
 
-export function DemoBackgroundPaths() {
-    return <BackgroundPaths title="Background Paths" />
+export default function DemoOne() {
+  return <WovenLightHero />;
 }

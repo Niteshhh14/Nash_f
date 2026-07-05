@@ -22,7 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }));
 
   const pathname = usePathname();
-  const { activeEmergency } = useAppStore();
+  const { activeEmergency, sidebarOpen, toggleSidebar } = useAppStore();
 
   const isAuthRequired = pathname !== '/' && pathname !== '/login';
 
@@ -45,6 +45,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
         <div className="flex flex-1 overflow-hidden relative">
           {isAuthRequired && <Sidebar />}
+
+          {/* Mobile Sidebar backdrop overlay */}
+          {isAuthRequired && sidebarOpen && (
+            <div 
+              onClick={toggleSidebar} 
+              className="fixed inset-0 z-30 bg-[#4E3629]/10 backdrop-blur-sm md:hidden cursor-pointer"
+            />
+          )}
+
           <div className="flex flex-1 flex-col overflow-hidden">
             {isAuthRequired && <Header />}
             <main className="flex-1 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent relative">

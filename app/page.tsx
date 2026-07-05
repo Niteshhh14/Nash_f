@@ -8,6 +8,7 @@ import { DoctorAvatarCanvas } from '../components/visualizers/DoctorAvatarCanvas
 import { TextRotate } from '../components/ui/text-rotate';
 import { Card, CardContent } from '../components/ui/card';
 import { FloatingPaths } from '../components/ui/background-paths';
+import { WovenCanvas } from '../components/ui/woven-light-hero';
 import {
   Activity,
   Heart,
@@ -51,7 +52,7 @@ const AnimatedECG = () => {
 
 export default function MarketingLandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>('home');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,20 +60,26 @@ export default function MarketingLandingPage() {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
+        setActiveSection('home');
       }
       
       const sections = ['problem', 'workflow', 'features', 'twin-showcase'];
 
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          // If the section occupies the viewport line at 250px from top
-          if (rect.top <= 250 && rect.bottom > 250) {
-            setActiveSection(section);
-            break;
+      if (window.scrollY > 20) {
+        let matched = false;
+        for (const section of sections) {
+          const el = document.getElementById(section);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            // If the section occupies the viewport line at 250px from top
+            if (rect.top <= 250 && rect.bottom > 250) {
+              setActiveSection(section);
+              matched = true;
+              break;
+            }
           }
         }
+        if (!matched) setActiveSection(null);
       }
     };
     window.addEventListener('scroll', handleScroll);
@@ -82,6 +89,10 @@ export default function MarketingLandingPage() {
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     setActiveSection(id);
+    if (id === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -116,12 +127,13 @@ export default function MarketingLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#4E3629] relative flex flex-col font-sans selection:bg-[#C7A37E]/30 selection:text-[#4E3629] overflow-hidden">
+    <div id="home" className="min-h-screen bg-[#FAF8F5] text-[#4E3629] relative flex flex-col font-sans selection:bg-[#C7A37E]/30 selection:text-[#4E3629] overflow-hidden">
       
       {/* Slow moving physiological background paths */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
+        <WovenCanvas />
       </div>
 
       {/* FLOATING GLASS NAVBAR */}
@@ -136,8 +148,8 @@ export default function MarketingLandingPage() {
 
           {/* Links - iPhone-like segmented indicator directly on navbar glass */}
           <nav className="hidden md:flex items-center space-x-1 text-[11px] font-bold uppercase tracking-wider">
-            {['problem', 'workflow', 'features', 'twin-showcase'].map((sec) => {
-              const label = sec === 'twin-showcase' ? 'Digital Twin' : sec === 'workflow' ? 'How It Works' : sec;
+            {['home', 'problem', 'workflow', 'features', 'twin-showcase'].map((sec) => {
+              const label = sec === 'home' ? 'Home' : sec === 'twin-showcase' ? 'Digital Twin' : sec === 'workflow' ? 'How It Works' : sec;
               const isActive = activeSection === sec;
               return (
                 <a
@@ -260,7 +272,7 @@ export default function MarketingLandingPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="w-full lg:w-2/5 relative"
+          className="w-full lg:w-2/5 relative lg:translate-x-12"
         >
           <div className="bg-white/45 border border-white/35 rounded-[24px] p-5 shadow-[0_12px_40px_rgba(100,71,54,0.02)] backdrop-blur-[24px] space-y-4">
             {/* Health Score Circular Chart */}

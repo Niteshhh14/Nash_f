@@ -3,13 +3,13 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store/use-auth-store';
 import { useAppStore } from '../../store/use-app-store';
 import { useAlertsQuery } from '../../hooks/use-alerts';
-import { Bell, Command, Volume2, VolumeX, ShieldAlert, Cpu } from 'lucide-react';
+import { Bell, Command, Volume2, VolumeX, ShieldAlert, Cpu, Menu } from 'lucide-react';
 import Link from 'next/link';
 
 export const Header: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { toggleCommandPalette, soundNotifications, toggleSoundNotifications } = useAppStore();
+  const { toggleCommandPalette, soundNotifications, toggleSoundNotifications, toggleSidebar } = useAppStore();
   const { data: alerts = [] } = useAlertsQuery('active');
 
   const activeAlertsCount = alerts.filter(a => a.status === 'active').length;
@@ -18,6 +18,14 @@ export const Header: React.FC = () => {
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#4E3629]/10 bg-white/35 px-6 backdrop-blur-[24px] relative z-20 text-[#4E3629]">
       {/* Search Trigger (Command Palette Shortcut representation) */}
       <div className="flex items-center space-x-4">
+        {/* Mobile Menu Toggle */}
+        <button
+          onClick={toggleSidebar}
+          className="flex md:hidden h-9 w-9 items-center justify-center rounded-xl border border-[#4E3629]/10 bg-white/40 text-[#4E3629]/70 hover:bg-white/60 cursor-pointer"
+        >
+          <Menu className="h-4 w-4" strokeWidth={1.5} />
+        </button>
+
         <button
           onClick={toggleCommandPalette}
           className="flex items-center space-x-2 rounded-xl border border-[#4E3629]/10 bg-white/40 px-3 py-1.5 text-xs text-[#4E3629]/80 hover:border-[#4E3629]/20 hover:bg-white/60 transition-all duration-200 cursor-pointer"
