@@ -1,239 +1,261 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useRef, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 interface DigitalTwin3DProps {
   heartRate: number;
-  oxygenSat?: number;
+  riskCategory: 'low' | 'moderate' | 'high' | 'critical';
   selectedOrgan?: string;
   setSelectedOrgan?: (organ: string) => void;
   autoRotate?: boolean;
   wireVisible?: boolean;
   explode?: boolean;
-  organStatuses?: Record<string, 'healthy' | 'warning' | 'high_risk' | 'critical'>;
-  riskCategory?: 'low' | 'moderate' | 'high' | 'critical';
   interactiveMode?: boolean;
 }
 
 interface OrganData {
   id: string;
   name: string;
+  color: number;
+  emissive: number;
   pos: [number, number, number];
-  scale: [number, number, number];
+  rot?: [number, number, number];
   pulse: number;
 }
 
 const ORGANS: OrganData[] = [
-  { id: 'brain', name: 'Brain', pos: [0, 2.4, 0], scale: [1, 1, 1], pulse: 0.8 },
-  { id: 'heart', name: 'Heart', pos: [0.18, 1.45, 0.22], scale: [1, 1, 1], pulse: 1.2 },
-  { id: 'lungs', name: 'Lungs', pos: [0, 1.55, -0.15], scale: [1, 1, 1], pulse: 0.45 },
-  { id: 'liver', name: 'Liver', pos: [-0.32, 0.95, 0.18], scale: [1, 1, 1], pulse: 0.35 },
-  { id: 'kidneys', name: 'Kidneys', pos: [0, 0.42, -0.22], scale: [1, 1, 1], pulse: 0.6 }
+  { id: 'brain', name: 'Brain', color: 0xffaec6, emissive: 0xff4d7a, pos: [0, 2.4, 0], pulse: 0.8 },
+  { id: 'heart', name: 'Heart', color: 0xff5566, emissive: 0xff1f3d, pos: [0.18, 1.45, 0.22], rot: [0, 0, 0.15], pulse: 1.2 },
+  { id: 'lungs', name: 'Lungs', color: 0xffb8c8, emissive: 0xff5e88, pos: [0, 1.55, -0.15], pulse: 0.45 },
+  { id: 'liver', name: 'Liver', color: 0x9b4a3a, emissive: 0x5a2218, pos: [-0.32, 0.95, 0.18], rot: [0, 0, 0.1], pulse: 0.35 },
+  { id: 'stomach', name: 'Stomach', color: 0xffc0a0, emissive: 0xcc6644, pos: [0.3, 0.7, 0.22], rot: [0, 0, 0.5], pulse: 0.3 },
+  { id: 'kidneys', name: 'Kidneys', color: 0xa04a4a, emissive: 0x552222, pos: [0, 0.42, -0.22], pulse: 0.6 },
+  { id: 'intestines', name: 'Intestines', color: 0xffd0a8, emissive: 0xcc8855, pos: [0, 0.05, 0.2], pulse: 0.4 }
 ];
 
-const STATUS_COLORS = {
-  healthy: '#8EA885',    // Soft Sage Green
-  warning: '#C7A37E',    // Warm Amber
-  high_risk: '#D98A55',  // Muted Orange
-  critical: '#D95566'    // Soft Medical Red
-};
-
-// Dynamic Camera and Target controller
-const CameraController: React.FC<{ 
-  selectedOrgan: string | undefined; 
-  autoRotate: boolean;
-}> = ({ selectedOrgan, autoRotate }) => {
-  const { camera, controls } = useThree();
-  const lastOrganRef = useRef<string | undefined>(undefined);
-  const isTransitioningRef = useRef<boolean>(false);
-
-  // Monitor selected organ changes to trigger camera zoom transition once
-  useEffect(() => {
-    if (selectedOrgan !== lastOrganRef.current) {
-      lastOrganRef.current = selectedOrgan;
-      isTransitioningRef.current = true;
-      
-      // Auto-unlock controls after a short transition duration (800ms)
-      const timer = setTimeout(() => {
-        isTransitioningRef.current = false;
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedOrgan]);
-
-  useFrame(() => {
-    if (!controls) return;
-    const orbit = controls as any;
-
-    if (isTransitioningRef.current) {
-      if (selectedOrgan) {
-        const organ = ORGANS.find(o => o.id === selectedOrgan);
-        if (organ) {
-          // Smoothly interpolate orbit controls target to selected organ position
-          const targetPos = new THREE.Vector3(organ.pos[0], organ.pos[1] - 0.6, organ.pos[2]);
-          orbit.target.lerp(targetPos, 0.08);
-
-          // Zoom camera in towards the organ
-          const desiredCamPos = new THREE.Vector3(
-            organ.pos[0], 
-            organ.pos[1] - 0.3, 
-            organ.pos[2] + 1.8
-          );
-          camera.position.lerp(desiredCamPos, 0.08);
-          orbit.autoRotate = false;
-        }
-      } else {
-        // Return to default overview view
-        orbit.target.lerp(new THREE.Vector3(0, 0.8, 0), 0.06);
-        
-        const desiredCamPos = new THREE.Vector3(0, 1.2, 6.2);
-        camera.position.lerp(desiredCamPos, 0.05);
-        orbit.autoRotate = autoRotate;
-      }
-      orbit.update();
-    } else {
-      // Toggle auto-rotation based on status when controls are unlocked
-      if (selectedOrgan) {
-        orbit.autoRotate = false;
-      } else {
-        orbit.autoRotate = autoRotate;
-      }
-    }
-  });
-
-  return (
-    <OrbitControls
-      makeDefault
-      enableZoom={true}
-      enablePan={false}
-      autoRotate={autoRotate}
-      autoRotateSpeed={0.45}
-      minDistance={2}
-      maxDistance={12}
-      maxPolarAngle={Math.PI * 0.75}
-      minPolarAngle={Math.PI * 0.25}
-    />
-  );
-};
-
-// Render Loaded Anatomy GLTF model or beautiful fallback structure
-const AnatomyScene: React.FC<{
+const AnatomicalModel: React.FC<{
   heartRate: number;
-  oxygenSat: number;
-  selectedOrgan: string | undefined;
+  selectedOrgan: string;
   setSelectedOrgan: (organ: string) => void;
   wireVisible: boolean;
   explode: boolean;
-  organStatuses?: Record<string, 'healthy' | 'warning' | 'high_risk' | 'critical'>;
-}> = ({ heartRate, oxygenSat = 98, selectedOrgan, setSelectedOrgan, wireVisible, explode, organStatuses = {} }) => {
-  const [gltf, setGltf] = useState<THREE.Group | null>(null);
-  const [loadFailed, setLoadFailed] = useState<boolean>(false);
-  const modelRef = useRef<THREE.Group>(null);
+}> = ({ heartRate, selectedOrgan, setSelectedOrgan, wireVisible, explode }) => {
   const organRefs = useRef<Record<string, THREE.Group>>({});
+  const shellRef = useRef<THREE.Group>(null);
+  const wireRef = useRef<THREE.Group>(null);
 
-  // Dynamic GLB loading helper
-  useEffect(() => {
-    const loader = new GLTFLoader();
-    loader.load(
-      '/models/human_anatomy.glb',
-      (gltfModel) => {
-        setGltf(gltfModel.scene);
-      },
-      undefined,
-      (err) => {
-        console.warn("Failed to load /models/human_anatomy.glb, using premium geometries.", err);
-        setLoadFailed(true);
-      }
-    );
-  }, []);
-
-  // Scale and center the loaded GLB model
-  useEffect(() => {
-    if (!gltf) return;
-    const box = new THREE.Box3().setFromObject(gltf);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-
-    // Scale to standard height ~4.8 units
-    const scale = 4.8 / size.y;
-    gltf.scale.setScalar(scale);
-    gltf.position.set(-center.x * scale, -center.y * scale + 0.8, -center.z * scale);
-  }, [gltf]);
-
-  // Handle continuous animations (subtle breathing/floating)
+  // Animate organs pulse, hover scaling, and exploded coordinate offsets
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
+    const explodeTarget = explode ? 1.2 : 0;
 
-    // Subtle breathing floating movement on the overall body
-    if (modelRef.current) {
-      modelRef.current.position.y = -0.5 + Math.sin(time * 1.2) * 0.03;
+    ORGANS.forEach((o) => {
+      const g = organRefs.current[o.id];
+      if (!g) return;
+
+      // Pulse calculations (heart rate affects heart pulse speed)
+      const speed = o.id === 'heart' ? (heartRate / 60) * 1.2 : o.pulse;
+      const pulse = 1.0 + Math.sin(time * speed * Math.PI * 2) * 0.03;
+      
+      const isActive = selectedOrgan === o.id;
+      const targetScale = isActive ? 1.15 * pulse : 1.0 * pulse;
+      
+      // Smoothly scale the organ
+      g.scale.setScalar(THREE.MathUtils.lerp(g.scale.x, targetScale, 0.15));
+
+      // Exploded coordinates math
+      const basePos = new THREE.Vector3(...o.pos);
+      const direction = basePos.clone().normalize();
+      // Increase outward offset for lower organs to separate them clearly
+      if (basePos.y < 0.5) {
+        direction.y -= 0.3;
+      }
+      const targetPos = basePos.clone().add(direction.multiplyScalar(explodeTarget));
+      g.position.lerp(targetPos, 0.08);
+
+      // Emissive breathe on highlighted item
+      const mat = (g.children[0] as THREE.Mesh).material as THREE.MeshStandardMaterial;
+      if (mat) {
+        mat.emissiveIntensity = isActive 
+          ? 1.0 + Math.sin(time * speed * Math.PI * 2) * 0.4
+          : 0.35;
+      }
+    });
+
+    // Make the body silhouette vanish if wireframe toggled off
+    const shellOpacity = wireVisible ? 0.07 : 0;
+    const wireOpacity = wireVisible ? 0.12 : 0;
+
+    if (shellRef.current) {
+      shellRef.current.children.forEach((child) => {
+        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
+        if (mat) mat.opacity = THREE.MathUtils.lerp(mat.opacity, shellOpacity, 0.1);
+      });
+    }
+
+    if (wireRef.current) {
+      wireRef.current.children.forEach((child) => {
+        const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+        if (mat) mat.opacity = THREE.MathUtils.lerp(mat.opacity, wireOpacity, 0.1);
+      });
     }
   });
 
-  // Premium fallback procedural shell
   const bodyParts = [
     { geo: new THREE.SphereGeometry(0.7, 32, 32), pos: [0, 2.4, 0], scale: [1, 1.05, 1] },
-    { geo: new THREE.CylinderGeometry(0.24, 0.3, 0.4, 16), pos: [0, 1.82, 0], scale: [1, 1, 1] },
-    { geo: new THREE.CapsuleGeometry(0.75, 1.1, 14, 28), pos: [0, 1.05, 0], scale: [1.05, 1, 0.62] },
-    { geo: new THREE.SphereGeometry(0.6, 24, 24), pos: [0, 0.05, 0], scale: [1.25, 0.65, 0.75] }
+    { geo: new THREE.CylinderGeometry(0.26, 0.32, 0.4, 16), pos: [0, 1.82, 0], scale: [1, 1, 1] },
+    { geo: new THREE.CapsuleGeometry(0.78, 1.1, 14, 28), pos: [0, 1.05, 0], scale: [1.05, 1, 0.62] },
+    { geo: new THREE.SphereGeometry(0.62, 24, 24), pos: [0, 0.05, 0], scale: [1.25, 0.65, 0.75] },
+    { geo: new THREE.CapsuleGeometry(0.17, 1.1, 8, 16), pos: [1.05, 1.25, 0], scale: [1, 1, 1], rot: [0, 0, 0.32] },
+    { geo: new THREE.CapsuleGeometry(0.17, 1.1, 8, 16), pos: [-1.05, 1.25, 0], scale: [1, 1, 1], rot: [0, 0, -0.32] },
+    { geo: new THREE.CapsuleGeometry(0.21, 1.4, 8, 16), pos: [0.42, -0.95, 0], scale: [1, 1, 1], rot: [0, 0, 0.06] },
+    { geo: new THREE.CapsuleGeometry(0.21, 1.4, 8, 16), pos: [-0.42, -0.95, 0], scale: [1, 1, 1], rot: [0, 0, -0.06] }
   ];
 
-  const handlePointerOver = (e: any) => {
-    e.stopPropagation();
-    document.body.style.cursor = 'pointer';
-  };
-
-  const handlePointerOut = () => {
-    document.body.style.cursor = 'default';
-  };
-
   return (
-    <group ref={modelRef} position={[0, -0.9, 0]} rotation={[0, -Math.PI / 2, 0]}>
-      {/* 1. Body Skin Shell Loader */}
-      {!loadFailed && gltf ? (
-        <primitive object={gltf} visible={wireVisible} />
-      ) : (
-        <group visible={wireVisible}>
-          {bodyParts.map((p, idx) => (
-            <mesh 
-              key={`shell-${idx}`} 
-              position={p.pos as [number, number, number]} 
-              scale={p.scale as [number, number, number]}
-            >
-              <primitive object={p.geo} />
-              <meshPhysicalMaterial 
-                color="#6fb8d8" 
-                roughness={0.2} 
-                metalness={0.05} 
-                transmission={0.8}
-                thickness={1.2}
-                transparent 
-                opacity={0.06} 
-                side={THREE.DoubleSide} 
-                depthWrite={false} 
-              />
-            </mesh>
-          ))}
-        </group>
-      )}
+    <group position={[0, -0.6, 0]}>
+      
+      {/* 1. Body Outline shell */}
+      <group ref={shellRef}>
+        {bodyParts.map((p, idx) => (
+          <mesh 
+            key={`shell-${idx}`} 
+            position={p.pos as [number, number, number]} 
+            scale={p.scale as [number, number, number]}
+            rotation={p.rot as [number, number, number]}
+          >
+            <primitive object={p.geo} />
+            <meshStandardMaterial 
+              color="#6fb8d8" 
+              transparent 
+              opacity={0.07} 
+              roughness={0.25} 
+              metalness={0.05} 
+              side={THREE.DoubleSide} 
+              depthWrite={false} 
+            />
+          </mesh>
+        ))}
+      </group>
 
-      {/* 2. Invisible click hotspots */}
+      {/* 2. Body Outline wireframes */}
+      <group ref={wireRef}>
+        {bodyParts.map((p, idx) => (
+          <mesh 
+            key={`wire-${idx}`} 
+            position={p.pos as [number, number, number]} 
+            scale={p.scale as [number, number, number]}
+            rotation={p.rot as [number, number, number]}
+          >
+            <primitive object={p.geo} />
+            <meshBasicMaterial 
+              color="#4aa0c4" 
+              wireframe 
+              transparent 
+              opacity={0.12} 
+            />
+          </mesh>
+        ))}
+      </group>
+
+      {/* 3. Detailed Organ Geometries */}
       {ORGANS.map((o) => (
-        <mesh 
+        <group 
           key={o.id}
+          ref={(el) => {
+            if (el) organRefs.current[o.id] = el;
+          }}
           position={o.pos}
+          rotation={o.rot}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedOrgan(o.id);
           }}
-          onPointerOver={handlePointerOver}
-          onPointerOut={handlePointerOut}
         >
-          <sphereGeometry args={[0.32, 16, 16]} />
-          <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
-        </mesh>
+          {o.id === 'brain' && (
+            <>
+              <mesh>
+                <sphereGeometry args={[0.36, 24, 24]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+              <mesh position={[0.2, 0.15, 0.1]}>
+                <sphereGeometry args={[0.14, 12, 12]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+              <mesh position={[-0.2, 0.15, 0.1]}>
+                <sphereGeometry args={[0.12, 12, 12]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+
+          {o.id === 'heart' && (
+            <>
+              <mesh>
+                <sphereGeometry args={[0.24, 24, 24]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+              <mesh position={[0.06, 0.22, 0.04]} rotation={[0, 0, -0.3]}>
+                <cylinderGeometry args={[0.06, 0.08, 0.24, 10]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+
+          {o.id === 'lungs' && (
+            <>
+              <mesh position={[-0.26, 0, 0]} scale={[0.65, 1.25, 0.65]}>
+                <sphereGeometry args={[0.26, 20, 20]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+              <mesh position={[0.26, 0, 0]} scale={[0.65, 1.25, 0.65]}>
+                <sphereGeometry args={[0.26, 20, 20]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+
+          {o.id === 'liver' && (
+            <>
+              <mesh scale={[1.1, 0.6, 0.55]}>
+                <sphereGeometry args={[0.34, 20, 20]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+
+          {o.id === 'stomach' && (
+            <>
+              <mesh scale={[0.8, 1.2, 0.8]}>
+                <capsuleGeometry args={[0.16, 0.24, 10, 20]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+
+          {o.id === 'kidneys' && (
+            <>
+              <mesh position={[-0.22, 0, 0]} scale={[0.7, 1.1, 0.7]}>
+                <sphereGeometry args={[0.18, 16, 16]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+              <mesh position={[0.22, 0, 0]} scale={[0.7, 1.1, 0.7]}>
+                <sphereGeometry args={[0.18, 16, 16]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+
+          {o.id === 'intestines' && (
+            <>
+              <mesh scale={[0.75, 0.75, 0.45]}>
+                <torusKnotGeometry args={[0.32, 0.1, 100, 16, 3, 4]} />
+                <meshStandardMaterial color={o.color} emissive={o.emissive} emissiveIntensity={0.35} roughness={0.42} metalness={0.18} />
+              </mesh>
+            </>
+          )}
+        </group>
       ))}
     </group>
   );
@@ -241,56 +263,59 @@ const AnatomyScene: React.FC<{
 
 export const DigitalTwin3D: React.FC<DigitalTwin3DProps> = ({
   heartRate,
-  oxygenSat,
-  selectedOrgan,
+  riskCategory,
+  selectedOrgan = 'brain',
   setSelectedOrgan = () => {},
   autoRotate = true,
   wireVisible = true,
   explode = false,
-  organStatuses
+  interactiveMode = true
 }) => {
   return (
     <div className="w-full h-full absolute inset-0">
-      <Canvas 
-        camera={{ position: [0, 1.2, 6.2], fov: 42 }}
-        gl={{ 
-          antialias: true, 
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.15
-        }}
-      >
+      <Canvas camera={{ position: [0.5, 1.6, 7.0], fov: 42 }}>
         <color attach="background" args={['#FAF8F5']} />
         
-        {/* soft ambient & clinical key lights */}
-        <ambientLight intensity={0.65} color="#e6effa" />
-        <directionalLight position={[8, 12, 8]} intensity={1.5} color="#ffffff" castShadow />
-        <directionalLight position={[-8, 6, -4]} intensity={0.45} color="#ffb0bb" />
-        <pointLight position={[0, 4, -4]} intensity={1.5} distance={15} color="#C7A37E" />
-        
-        {/* Soft grid background */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.1, 0]}>
-          <ringGeometry args={[2.0, 5.5, 64]} />
-          <meshBasicMaterial color="#C7A37E" transparent opacity={0.05} side={THREE.DoubleSide} />
-        </mesh>
-        
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.09, 0]}>
-          <ringGeometry args={[1.95, 2.0, 80]} />
-          <meshBasicMaterial color="#C7A37E" transparent opacity={0.25} side={THREE.DoubleSide} />
+        {/* Lights */}
+        <ambientLight intensity={0.55} color="#4a5a78" />
+        <directionalLight position={[6, 9, 6]} intensity={1.4} color="#9fc0ff" />
+        <directionalLight position={[-6, 3, -2]} intensity={0.5} color="#ff7a90" />
+        <pointLight position={[0, 4, -5]} intensity={2.2} distance={18} color="#C7A37E" />
+        <pointLight position={[0, -3, 3]} intensity={1.0} distance={16} color="#3a6cb0" />
+
+        {/* floor grid */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, 0]}>
+          <ringGeometry args={[2.5, 6, 64]} />
+          <meshBasicMaterial color="#C7A37E" transparent opacity={0.06} side={THREE.DoubleSide} />
         </mesh>
 
-        <Stars radius={90} depth={40} count={150} factor={3} saturation={0.4} fade speed={0.8} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.19, 0]}>
+          <ringGeometry args={[2.45, 2.5, 80]} />
+          <meshBasicMaterial color="#C7A37E" transparent opacity={0.35} side={THREE.DoubleSide} />
+        </mesh>
 
-        <AnatomyScene
-          heartRate={heartRate}
-          oxygenSat={oxygenSat || 98}
-          selectedOrgan={selectedOrgan}
-          setSelectedOrgan={setSelectedOrgan}
+        {/* Ambient drift particles */}
+        <Stars radius={100} depth={50} count={220} factor={4} saturation={0.5} fade speed={1} />
+
+        <AnatomicalModel 
+          heartRate={heartRate} 
+          selectedOrgan={selectedOrgan} 
+          setSelectedOrgan={setSelectedOrgan} 
           wireVisible={wireVisible}
           explode={explode}
-          organStatuses={organStatuses || {}}
         />
 
-        <CameraController selectedOrgan={selectedOrgan} autoRotate={autoRotate} />
+        <OrbitControls 
+          enableZoom={true} 
+          enablePan={false}
+          autoRotate={autoRotate}
+          autoRotateSpeed={0.55}
+          target={[0, 1.2, 0]}
+          minDistance={4}
+          maxDistance={14}
+          maxPolarAngle={Math.PI * 0.82}
+          minPolarAngle={Math.PI * 0.18}
+        />
       </Canvas>
     </div>
   );
