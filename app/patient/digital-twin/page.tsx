@@ -270,7 +270,7 @@ export default function DigitalTwinPage() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#FAF8F5] text-[#4E3629] relative select-none">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-[#FAF8F5] text-[#4E3629] relative select-none">
       
       {/* Subtle Grid Background matching the "Anatomica" grid layout */}
       <div 
