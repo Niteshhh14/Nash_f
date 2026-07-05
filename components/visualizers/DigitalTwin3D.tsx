@@ -135,75 +135,16 @@ const AnatomyScene: React.FC<{
     const scale = 4.8 / size.y;
     gltf.scale.setScalar(scale);
     gltf.position.set(-center.x * scale, -center.y * scale + 0.8, -center.z * scale);
-
-    // Apply premium translucent glassmorphic material to loaded meshes
-    gltf.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        mesh.material = new THREE.MeshPhysicalMaterial({
-          color: '#ffffff',
-          roughness: 0.15,
-          metalness: 0.05,
-          transmission: 0.75, // High glass transmission
-          thickness: 1.0,
-          transparent: true,
-          opacity: 0.18,
-          side: THREE.DoubleSide,
-          depthWrite: false
-        });
-      }
-    });
   }, [gltf]);
 
-  // Handle continuous animations (breathing and organ pulsation)
+  // Handle continuous animations (subtle breathing/floating)
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
-    const explodeTarget = explode ? 1.0 : 0;
 
     // Subtle breathing floating movement on the overall body
     if (modelRef.current) {
       modelRef.current.position.y = -0.5 + Math.sin(time * 1.2) * 0.03;
     }
-
-    // Organ-specific beats and status coloring
-    ORGANS.forEach((o) => {
-      const group = organRefs.current[o.id];
-      if (!group) return;
-
-      // Base pulsate speeds (heart uses real heart rate)
-      const baseSpeed = o.id === 'heart' ? (heartRate / 60) * 1.2 : o.pulse;
-      const pulseFactor = 1.0 + Math.sin(time * baseSpeed * Math.PI * 2) * 0.04;
-      
-      const isActive = selectedOrgan === o.id;
-      const targetScale = isActive ? 1.2 * pulseFactor : 1.0 * pulseFactor;
-
-      // Lerp scale changes smoothly
-      group.scale.setScalar(THREE.MathUtils.lerp(group.scale.x, targetScale, 0.15));
-
-      // Explode coordinate math
-      const basePos = new THREE.Vector3(...o.pos);
-      const dir = basePos.clone().setY(0).normalize();
-      const targetPos = basePos.clone().add(dir.multiplyScalar(explodeTarget));
-      group.position.lerp(targetPos, 0.08);
-
-      // Interpolate opacity/dimming on highlight
-      group.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          const mat = mesh.material as THREE.MeshStandardMaterial;
-          if (mat) {
-            const status = organStatuses[o.id] || 'healthy';
-            const colorHex = STATUS_COLORS[status];
-            mat.color.set(colorHex);
-
-            const isDimmed = selectedOrgan && !isActive;
-            const targetOpacity = isDimmed ? 0.22 : 0.88;
-            mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, 0.1);
-            mat.emissiveIntensity = isActive ? 0.6 + Math.sin(time * 4) * 0.35 : 0.12;
-          }
-        }
-      });
-    });
   });
 
   // Premium fallback procedural shell
@@ -253,13 +194,10 @@ const AnatomyScene: React.FC<{
         </group>
       )}
 
-      {/* 2. Interactive Organs */}
+      {/* 2. Invisible click hotspots */}
       {ORGANS.map((o) => (
-        <group 
+        <mesh 
           key={o.id}
-          ref={(el) => {
-            if (el) organRefs.current[o.id] = el;
-          }}
           position={o.pos}
           onClick={(e) => {
             e.stopPropagation();
@@ -268,102 +206,9 @@ const AnatomyScene: React.FC<{
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
         >
-          {o.id === 'brain' && (
-            <mesh>
-              <sphereGeometry args={[0.34, 24, 24]} />
-              <meshStandardMaterial 
-                roughness={0.4} 
-                metalness={0.1} 
-                transparent 
-                opacity={0.88}
-                emissive={STATUS_COLORS[organStatuses.brain || 'healthy']}
-                emissiveIntensity={0.15}
-              />
-            </mesh>
-          )}
-
-          {o.id === 'heart' && (
-            <mesh>
-              <sphereGeometry args={[0.22, 24, 24]} />
-              <meshStandardMaterial 
-                roughness={0.4} 
-                metalness={0.1} 
-                transparent 
-                opacity={0.88}
-                emissive={STATUS_COLORS[organStatuses.heart || 'healthy']}
-                emissiveIntensity={0.15}
-              />
-            </mesh>
-          )}
-
-          {o.id === 'lungs' && (
-            <group>
-              <mesh position={[-0.22, 0, 0]} scale={[0.65, 1.2, 0.65]}>
-                <sphereGeometry args={[0.24, 20, 20]} />
-                <meshStandardMaterial 
-                  roughness={0.4} 
-                  metalness={0.1} 
-                  transparent 
-                  opacity={0.88}
-                  emissive={STATUS_COLORS[organStatuses.lungs || 'healthy']}
-                  emissiveIntensity={0.15}
-                />
-              </mesh>
-              <mesh position={[0.22, 0, 0]} scale={[0.65, 1.2, 0.65]}>
-                <sphereGeometry args={[0.24, 20, 20]} />
-                <meshStandardMaterial 
-                  roughness={0.4} 
-                  metalness={0.1} 
-                  transparent 
-                  opacity={0.88}
-                  emissive={STATUS_COLORS[organStatuses.lungs || 'healthy']}
-                  emissiveIntensity={0.15}
-                />
-              </mesh>
-            </group>
-          )}
-
-          {o.id === 'liver' && (
-            <mesh scale={[1.1, 0.6, 0.55]}>
-              <sphereGeometry args={[0.3, 20, 20]} />
-              <meshStandardMaterial 
-                roughness={0.4} 
-                metalness={0.1} 
-                transparent 
-                opacity={0.88}
-                emissive={STATUS_COLORS[organStatuses.liver || 'healthy']}
-                emissiveIntensity={0.15}
-              />
-            </mesh>
-          )}
-
-          {o.id === 'kidneys' && (
-            <group>
-              <mesh position={[-0.2, 0, 0]} scale={[0.7, 1.1, 0.7]}>
-                <sphereGeometry args={[0.16, 16, 16]} />
-                <meshStandardMaterial 
-                  roughness={0.4} 
-                  metalness={0.1} 
-                  transparent 
-                  opacity={0.88}
-                  emissive={STATUS_COLORS[organStatuses.kidneys || 'healthy']}
-                  emissiveIntensity={0.15}
-                />
-              </mesh>
-              <mesh position={[0.2, 0, 0]} scale={[0.7, 1.1, 0.7]}>
-                <sphereGeometry args={[0.16, 16, 16]} />
-                <meshStandardMaterial 
-                  roughness={0.4} 
-                  metalness={0.1} 
-                  transparent 
-                  opacity={0.88}
-                  emissive={STATUS_COLORS[organStatuses.kidneys || 'healthy']}
-                  emissiveIntensity={0.15}
-                />
-              </mesh>
-            </group>
-          )}
-        </group>
+          <sphereGeometry args={[0.32, 16, 16]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+        </mesh>
       ))}
     </group>
   );
